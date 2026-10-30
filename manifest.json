@@ -1,0 +1,10 @@
+{
+  "id": "pfpdf-export",
+  "name": "pfpdf Export",
+  "version": "0.1.0",
+  "minAppVersion": "1.13.0",
+  "description": "Export notes to print-quality PDF with pfpdf, including embedded and remote images.",
+  "author": "umiyosh",
+  "authorUrl": "https://github.com/umiyosh",
+  "isDesktopOnly": true
+}

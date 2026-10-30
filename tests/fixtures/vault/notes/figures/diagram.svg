@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="120" viewBox="0 0 320 120">
+  <rect x="4" y="4" width="312" height="112" rx="12" fill="#fff4d6" stroke="#d97706" stroke-width="4"/>
+  <text x="160" y="70" font-size="28" text-anchor="middle" fill="#92400e">SVG diagram</text>
+</svg>

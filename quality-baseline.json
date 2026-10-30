@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "policy": "Every current quality violation is a repayment target. The baseline exists to prevent increases and track reductions.",
+  "thresholds": {},
+  "issues": []
+}

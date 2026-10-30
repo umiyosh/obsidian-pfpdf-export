@@ -1,0 +1,42 @@
+{
+  "name": "obsidian-pfpdf-export",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Obsidian plugin that exports notes to PDF with pfpdf",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -p tsconfig.json && node esbuild.config.mjs production",
+    "lint": "eslint .",
+    "fmt": "prettier --write .",
+    "fmt-check": "prettier --check .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "quality:check": "node scripts/quality-gate.mjs",
+    "quality:update-baseline": "node scripts/quality-gate.mjs --update-baseline",
+    "quality:test": "node --test scripts/*.test.mjs",
+    "test:e2e": "PFPDF_E2E=1 vitest run tests/e2e-pfpdf.test.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/cross-spawn": "^6.0.6",
+    "@types/node": "^22.19.0",
+    "@vitest/coverage-v8": "^4.1.12",
+    "esbuild": "^0.28.2",
+    "eslint": "^9.39.5",
+    "eslint-plugin-obsidianmd": "^0.4.2",
+    "globals": "^17.13.0",
+    "knip": "^6.43.0",
+    "obsidian": "^1.14.4",
+    "prettier": "^3.9.10",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^4.1.12"
+  },
+  "dependencies": {
+    "cross-spawn": "^7.0.6"
+  }
+}

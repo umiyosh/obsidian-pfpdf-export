@@ -1,0 +1,7 @@
+coverage/
+node_modules/
+main.js
+package-lock.json
+quality-baseline.json
+tests/.output/
+.wt/
