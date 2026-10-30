@@ -28,7 +28,7 @@ export const DEFAULT_SETTINGS: Readonly<PfpdfSettings> = {
   outputFolder: "",
   openAfterExport: true,
   extraPath: "",
-  // The first run downloads pfpdf and Chromium, which can take minutes.
+  // Generous so a long document with many diagrams is not cut off; users can lower it.
   timeoutSeconds: 600,
   keepWorkDir: false,
 };
@@ -44,12 +44,17 @@ const isTimeout = (v: unknown): v is number =>
 const isTemplate = (v: unknown): v is Template => TEMPLATES.some((t) => t === v);
 const isLocation = (v: unknown): v is OutputLocation => OUTPUT_LOCATIONS.some((l) => l === v);
 
+// Builds before the first release saved this default, which made the plugin download pfpdf and Chromium.
+// It was never a user's choice, so it moves to the new default; a user's own npx command stays.
+const LEGACY_DEFAULT_COMMAND = "npx --yes @pfnet-research/pfpdf@0.3.0";
+
 /** Saved data comes from disk and may be from an older version or hand-edited. */
 export function parseSettings(data: unknown): PfpdfSettings {
   const d: Record<string, unknown> = typeof data === "object" && data !== null ? { ...data } : {};
   const command = pick(d.command, isString, DEFAULT_SETTINGS.command);
+  const replaced = command.trim() === "" || command === LEGACY_DEFAULT_COMMAND;
   return {
-    command: command.trim() === "" ? DEFAULT_SETTINGS.command : command,
+    command: replaced ? DEFAULT_SETTINGS.command : command,
     extraArgs: pick(d.extraArgs, isString, DEFAULT_SETTINGS.extraArgs),
     template: pick(d.template, isTemplate, DEFAULT_SETTINGS.template),
     toc: pick(d.toc, isBoolean, DEFAULT_SETTINGS.toc),

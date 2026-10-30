@@ -81,7 +81,7 @@ const MAX_OUTPUT = 200_000;
 
 export function runCommand(argv: readonly string[], options: RunOptions): Promise<RunResult> {
   const [command = "", ...args] = argv;
-  // cross-spawn starts Windows .cmd shims such as npx with every argument escaped for cmd.exe.
+  // cross-spawn starts Windows .cmd shims such as the npm-installed pfpdf with every argument escaped for cmd.exe.
   // A plain `shell: true` would let a note or folder name like "a&b" run as a second command.
   return new Promise((resolve) => {
     let output = "";

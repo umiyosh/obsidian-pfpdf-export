@@ -1,6 +1,7 @@
 import { Notice, Plugin, TFile } from "obsidian";
 import { homedir } from "node:os";
 import { buildSearchPath, loginShellPath, runCommand, splitCommand } from "./export/command";
+import { checkReadiness, notFoundMessage, type Readiness } from "./export/readiness";
 import { runExport } from "./export-action";
 import { PfpdfSettingTab } from "./settings";
 import { DEFAULT_SETTINGS, parseSettings, type PfpdfSettings } from "./settings-data";
@@ -9,6 +10,7 @@ export default class PfpdfExportPlugin extends Plugin {
   override settings: PfpdfSettings = { ...DEFAULT_SETTINGS };
   private loginPath: Promise<string | null> | null = null;
   private running = false;
+  private readyKey: string | null = null;
 
   override async onload(): Promise<void> {
     this.settings = parseSettings(await this.loadData());
@@ -59,14 +61,31 @@ export default class PfpdfExportPlugin extends Plugin {
     });
   }
 
-  /** Runs `pfpdf --version` so the settings tab can show whether the command works. */
+  /** Runs `pfpdf --version` and `--doctor` so the settings tab can show whether exports work. */
   async checkPfpdf(): Promise<string> {
-    const result = await runCommand([...splitCommand(this.settings.command), "--version"], {
-      env: { ...process.env, PATH: await this.searchPath() },
+    const searchPath = await this.searchPath();
+    const { command } = this.settings;
+    const result = await runCommand([...splitCommand(command), "--version"], {
+      env: { ...process.env, PATH: searchPath },
       timeoutMs: this.settings.timeoutSeconds * 1000,
     });
-    if (result.exitCode === 0) return `pfpdf ${result.output.trim().split("\n").pop() ?? ""}`;
-    return `pfpdf could not run: ${result.startError ?? result.output.trim().slice(-300)}`;
+    if (result.startError && /ENOENT/.test(result.startError)) return notFoundMessage(command);
+    if (result.exitCode !== 0) {
+      return `pfpdf could not run: ${result.startError ?? result.output.trim().slice(-300)}`;
+    }
+    const readiness = await this.readiness(searchPath);
+    const version = result.output.trim().split("\n").pop() ?? "";
+    return readiness.ok ? `pfpdf ${version} is ready.` : readiness.message;
+  }
+
+  /** Remembers a passing check per command and PATH, since --doctor takes seconds. */
+  private async readiness(searchPath: string): Promise<Readiness> {
+    const { command, extraArgs } = this.settings;
+    const key = JSON.stringify([command, extraArgs, searchPath]);
+    if (this.readyKey === key) return { ok: true };
+    const readiness = await checkReadiness({ command, extraArgs, searchPath });
+    this.readyKey = readiness.ok ? key : null;
+    return readiness;
   }
 
   async exportFile(file: TFile): Promise<void> {
@@ -76,7 +95,15 @@ export default class PfpdfExportPlugin extends Plugin {
     }
     this.running = true;
     try {
-      await runExport(this.app, file, this.settings, await this.searchPath());
+      const searchPath = await this.searchPath();
+      const checking = new Notice("Checking pfpdf…", 0);
+      const readiness = await this.readiness(searchPath);
+      checking.hide();
+      if (!readiness.ok) {
+        new Notice(readiness.message, 0);
+        return;
+      }
+      await runExport(this.app, file, this.settings, searchPath);
     } finally {
       this.running = false;
     }
