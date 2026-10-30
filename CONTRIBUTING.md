@@ -43,6 +43,13 @@ The end-to-end tests run pfpdf with `npx -y @pfnet-research/pfpdf@0.3.0` unless 
 - Write comments that explain why, not what.
 - The plugin must not download or install code at run time (Obsidian developer policy). Network access and files outside the vault must be listed under **Disclosures** in both READMEs.
 
+## Releasing (maintainers)
+
+1. Set the new version in `manifest.json` and `package.json`, and add it to `versions.json` with the `minAppVersion` from `manifest.json`. Merge this to `master`.
+2. Push a tag equal to the version, without a `v` prefix, for example `git tag 0.2.0 && git push origin 0.2.0`.
+3. The **Release** workflow checks that the tag and the three files agree, runs `make check`, attests the build provenance of `main.js` and `manifest.json`, and creates a draft GitHub release with those files.
+4. Check the draft, for example with `gh attestation verify main.js --repo umiyosh/obsidian-pfpdf-export`, then publish it.
+
 ## Pull requests
 
 1. Create a branch from `master`.
