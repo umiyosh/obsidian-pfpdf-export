@@ -1,11 +1,14 @@
 import spawn from "cross-spawn";
 
-/** Splits a command line on whitespace, honouring single and double quotes. */
+/**
+ * Splits a command line on whitespace, honouring single and double quotes. Inside double quotes
+ * only \" is an escape, so Windows paths such as "C:\Program Files\x.cmd" keep their backslashes.
+ */
 export function splitCommand(command: string): string[] {
   const args: string[] = [];
-  const re = /"((?:\\.|[^"\\])*)"|'([^']*)'|(\S+)/g;
+  const re = /"((?:\\"|[^"])*)"|'([^']*)'|(\S+)/g;
   for (const m of command.matchAll(re)) {
-    args.push(m[1] !== undefined ? m[1].replace(/\\(.)/g, "$1") : (m[2] ?? m[3] ?? ""));
+    args.push(m[1] !== undefined ? m[1].replaceAll('\\"', '"') : (m[2] ?? m[3] ?? ""));
   }
   return args;
 }
