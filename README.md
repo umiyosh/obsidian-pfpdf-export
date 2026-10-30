@@ -1,92 +1,147 @@
-# pfpdf Export for Obsidian
+# pfpdf Export
 
-Obsidian のノートを [pfpdf](https://github.com/pfnet-research/pfpdf) で組版し、表紙・目次付きの PDF に書き出すデスクトップ専用プラグイン。
+[日本語](README.ja.md)
 
-ノートに埋め込んだ画像（Vault 内の画像、サイズ指定、HTML の `<img>`、リモート画像）は、すべて PDF に入る。
+Export Obsidian notes to print-quality PDFs with a cover page and table of contents, typeset by [pfpdf](https://github.com/pfnet-research/pfpdf). Images embedded in the note, including sized images, HTML `<img>` tags and remote images, are included in the PDF.
 
-## 必要なもの
+The plugin works on desktop only (Windows, macOS and Linux), because it runs pfpdf as a separate program.
 
-- Obsidian 1.13.0 以降（デスクトップ版）
-- Node.js 22.12 以降
-- 初回の書き出し時に、pfpdf と描画用の Chromium が自動でダウンロードされる（数分かかることがある）
+## Requirements
 
-## インストール
+- Obsidian 1.13.0 or later (desktop)
+- [Node.js](https://nodejs.org/) 22.12 or later
+- pfpdf 0.3.0, installed by you (see below). The plugin never downloads or installs pfpdf, its browser or anything else.
 
-1. `npm install && npm run build` で `main.js` を作る
-2. Vault の `.obsidian/plugins/pfpdf-export/` に `main.js` と `manifest.json` を置く
-3. 設定 → コミュニティプラグインで「pfpdf Export」を有効にする
+### Install pfpdf
 
-## 使い方
+1. Install pfpdf with npm:
 
-- コマンドパレットで「Export current note to PDF」を実行する
-- またはファイルエクスプローラーでノートを右クリックし「Export to PDF with pfpdf」を選ぶ
+   ```sh
+   npm install -g @pfnet-research/pfpdf@0.3.0
+   ```
 
-テンプレートや目次は、ノートの front matter で指定できる。
+2. Convert any Markdown file once in a terminal. On its first conversion, pfpdf downloads Chromium, the browser it renders PDFs with (several hundred megabytes), and caches it for later runs. The plugin does not export until this is done.
+
+   ```sh
+   pfpdf --input hello.md --output hello.pdf
+   ```
+
+   `hello.md` can be any Markdown file, for example one containing just `# Hello`.
+
+3. Check that pfpdf is ready. The `browser` check should report `pass`.
+
+   ```sh
+   pfpdf --doctor
+   ```
+
+On Linux, Chromium also needs some system libraries; `pfpdf --doctor` reports what is missing. See [pfpdf's troubleshooting guide](https://github.com/pfnet-research/pfpdf/blob/main/docs/tutorial.en/08_troubleshooting.md).
+
+## Installation
+
+Open **Settings → Community plugins → Browse**, search for **pfpdf Export**, then select **Install** and **Enable**.
+
+To install manually, download `main.js` and `manifest.json` from the [latest release](https://github.com/umiyosh/obsidian-pfpdf-export/releases/latest), put them in `<your vault>/.obsidian/plugins/pfpdf-export/`, reload Obsidian, and enable **pfpdf Export** under **Settings → Community plugins**.
+
+## Usage
+
+- Run **Export current note to PDF** from the command palette, or
+- right-click a note in the file explorer and select **Export to PDF with pfpdf**.
+
+Before the first export in a session, the plugin runs `pfpdf --doctor` to confirm that pfpdf and its browser are ready. If they are not, it tells you what to do instead of exporting. **Check pfpdf** in the plugin settings runs the same check.
+
+Set the template and table of contents in the note's front matter:
 
 ```yaml
 ---
-title: 四半期報告書
-author: 山田 太郎
+title: Quarterly report
+author: Jane Doe
 template: technical
 toc: true
 ---
 ```
 
-pfpdf が使うキー（`title`、`author`、`series`、`template`、`toc`、`date`、`page_size`、`lang`、`dir`、`confidential`、`logo`、`bibliography`）だけを型を確かめて渡す。`tags` などほかのキーは無視する。`title` が無ければノート名を使う。
+The plugin passes only the keys pfpdf uses (`title`, `author`, `series`, `template`, `toc`, `date`, `page_size`, `lang`, `dir`, `confidential`, `logo`, `bibliography`), after checking their types. It ignores other keys such as `tags`. Without `title`, the note name is used. `logo` and `bibliography` are paths to files in the vault.
 
-## Obsidian 記法の扱い
+## How Obsidian syntax is converted
 
-pfpdf は GitHub Flavored Markdown を組版するため、Obsidian 固有の記法は書き出し前に変換する。
+pfpdf typesets GitHub Flavored Markdown, so Obsidian-specific syntax is converted before export.
 
-| 記法                                                            | PDF での扱い                                                          |
-| --------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `![[画像.png]]`、`![[画像.png\|300]]`、`![[画像.png\|300x200]]` | 画像。サイズ指定を反映する                                            |
-| `![代替](相対パス.png)`、`![代替](<空白 を含む.png>)`           | 画像。ノートからの相対パスを解決する                                  |
-| `<img src="相対パス.png">`                                      | 画像                                                                  |
-| `![](https://…)`                                                | ダウンロードして画像として埋め込む。失敗したら URL のまま残し警告する |
-| `![[ノート]]`、`![[ノート#見出し]]`、`![[ノート#^ブロック]]`    | 本文を展開する。循環は止める                                          |
-| `![[図.excalidraw]]`                                            | Excalidraw が自動書き出しした SVG / PNG を使う                        |
-| `[[リンク\|別名]]`、ノートへの Markdown リンク                  | 表示テキスト（pfpdf は文書外へのリンクを受け付けないため）            |
-| `> [!note] タイトル`（callout）                                 | 色付きの枠                                                            |
-| `==ハイライト==`                                                | ハイライト                                                            |
-| `%%コメント%%`、`^block-id`                                     | 削除する                                                              |
-| `^[インライン脚注]`                                             | 脚注                                                                  |
-| コードブロック、インラインコード、数式                          | そのまま                                                              |
+| Syntax                                                             | In the PDF                                                                          |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `![[image.png]]`, `![[image.png\|300]]`, `![[image.png\|300x200]]` | Image, at the given size                                                            |
+| `![alt](relative/path.png)`, `![alt](<path with spaces.png>)`      | Image; the path is resolved from the note                                           |
+| `<img src="relative/path.png">`                                    | Image                                                                               |
+| `![](https://…)`                                                   | Downloaded and embedded. If the download fails, the URL is kept and a warning shown |
+| `![[Note]]`, `![[Note#Heading]]`, `![[Note#^block]]`               | The embedded content. Circular embeds are skipped                                   |
+| `![[drawing.excalidraw]]`                                          | The SVG or PNG that the Excalidraw plugin exported automatically                    |
+| `[[Link\|alias]]`, Markdown links to notes                         | Plain text, because pfpdf does not accept links outside the document                |
+| `> [!note] Title` (callouts)                                       | A coloured box                                                                      |
+| `==highlight==`                                                    | Highlight                                                                           |
+| `%%comment%%`, `^block-id`                                         | Removed                                                                             |
+| `^[inline footnote]`                                               | Footnote                                                                            |
+| Code blocks, inline code, math                                     | Unchanged                                                                           |
 
-### 注意点
+### Things to know
 
-- 単独行の `___`（アンダースコア 3 個以上）は、pfpdf では改ページになる。水平線には `---` を使う
-- Dataview などプラグインが描画する内容は、描画結果ではなくコードブロックの元の記述のまま PDF に出る。Obsidian の画面ではなくノートの記法から組版するため
-- pfpdf はノート内の raw HTML と `<script>` をそのまま実行する（[pfpdf のセキュリティ方針](https://github.com/pfnet-research/pfpdf/blob/main/SECURITY.md)）。出所の分からないノートは書き出さない
-- HEIC / TIFF 画像は Chromium が描画できない。PNG か JPEG に変換する
-- 数式の構文に誤りがあると、pfpdf は PDF を作らずに失敗する。本文で `$` を使うときは `\$` と書く
+- A line with only `___` (three or more underscores) is a page break in pfpdf. Use `---` for a horizontal rule.
+- Content that another plugin renders, such as Dataview queries, appears as its source code block, because the PDF is typeset from the note's Markdown, not from Obsidian's view.
+- HEIC and TIFF images cannot be rendered by Chromium. Convert them to PNG or JPEG.
+- If a formula has a syntax error, pfpdf fails without producing a PDF. Write `\$` for a literal dollar sign.
 
-## 設定
+## Settings
 
-| 設定                   | 既定値                                  | 内容                                                               |
-| ---------------------- | --------------------------------------- | ------------------------------------------------------------------ |
-| Default template       | `default`                               | front matter に `template` が無いときのテンプレート                |
-| Table of contents      | オン                                    | front matter に `toc` が無いときの目次の有無                       |
-| Save location          | Ask every time                          | 保存ダイアログで選ぶ／ノートと同じフォルダ／Vault 内の指定フォルダ |
-| Open after export      | オン                                    | 書き出した PDF を開く                                              |
-| Pfpdf command          | `npx --yes @pfnet-research/pfpdf@0.3.0` | pfpdf を起動するコマンド。「Check pfpdf」で動作を確認できる        |
-| Extra arguments        | なし                                    | pfpdf に毎回渡す引数（例: `--host-fonts`）                         |
-| Additional search path | なし                                    | Node.js が見つからないときに足す PATH                              |
-| Timeout in seconds     | 600                                     | 1 回の書き出しの制限時間                                           |
-| Keep work directory    | オフ                                    | 生成した Markdown とコピーした画像を残す（調査用）                 |
+| Setting                | Default        | Description                                                            |
+| ---------------------- | -------------- | ---------------------------------------------------------------------- |
+| Default template       | `default`      | Template used when the front matter has no `template`                  |
+| Table of contents      | On             | Whether to add a table of contents when the front matter has no `toc`  |
+| Save location          | Ask every time | A save dialog, the note's folder, or a fixed folder in the vault       |
+| Open after export      | On             | Opens the PDF in your default PDF viewer                               |
+| Pfpdf command          | `pfpdf`        | Command that runs pfpdf. **Check pfpdf** shows whether exports can run |
+| Extra arguments        | None           | Arguments added to every pfpdf run, for example `--host-fonts`         |
+| Additional search path | None           | Folders to add to PATH if Node.js or pfpdf is not found                |
+| Timeout in seconds     | 600            | Time limit for one export                                              |
+| Keep work directory    | Off            | Keeps the generated Markdown and copied images for troubleshooting     |
 
-Dock などから起動した Obsidian は PATH が最小限になるため、ログインシェルの PATH と、よく使われる Node.js のインストール先（Homebrew、Volta、nodebrew、mise、asdf）を自動で補う。
+When Obsidian is started from the Dock or Start menu, its PATH contains only system folders. To find Node.js and pfpdf, the plugin adds the PATH of your login shell and common Node.js install locations (Homebrew, Volta, nodebrew, mise, asdf).
 
-## 開発
+You can set **Pfpdf command** to another command, such as `npx @pfnet-research/pfpdf@0.3.0`. Such a command runs as you set it, so if it downloads packages, that is your choice.
 
-```sh
-make check         # lint・整形・型・品質ベースライン・テスト・カバレッジ・ビルド
-make e2e           # 実際の pfpdf で画像入りノートを PDF にし、画像を検査する（poppler が必要）
-make e2e-obsidian  # 隔離した Obsidian でコマンドを実行し、PDF の画像と設定画面を検査する（macOS）
-```
+## Disclosures
 
-`make e2e-obsidian` は別のユーザーデータディレクトリで Obsidian を起動するため、起動中の Obsidian や普段の Vault には触れない。
+**Network use**
 
-## ライセンス
+- The plugin downloads remote images (`http` and `https` URLs) in the note you export, using Obsidian's `requestUrl`, so they can be embedded in the PDF. Each download times out after 30 seconds. No other data is sent.
+- If such a download fails, the URL is passed to pfpdf, and pfpdf's browser may try to load it. Remote resources in raw HTML in the note can also be loaded by pfpdf's browser.
+- The plugin itself never downloads pfpdf, Chromium or other code. pfpdf downloads Chromium only when you run its first conversion yourself, as described in [Install pfpdf](#install-pfpdf).
 
-MIT
+**Files outside the vault**
+
+- Each export creates a work directory in your system's temporary folder, copies the note's images there, and deletes it afterwards (unless **Keep work directory** is on).
+- With **Save location** set to **Ask every time**, you can save the PDF anywhere, including outside the vault.
+- With **Open after export** on, the PDF is opened in your system's default PDF viewer.
+
+**External programs**
+
+- The plugin runs pfpdf (the **Pfpdf command** setting) as a separate process, with `--doctor` to check it and with `--input` and `--output` to export.
+- On macOS and Linux, it runs your login shell (`$SHELL -ilc`) once per session to read your PATH. This loads your shell's startup files.
+
+**Other**
+
+- No telemetry. No account or payment is needed.
+
+**Security note**
+
+pfpdf renders raw HTML in notes and runs `<script>` elements, as described in [pfpdf's security policy](https://github.com/pfnet-research/pfpdf/blob/main/SECURITY.md). Do not export notes from sources you do not trust.
+
+## Credits
+
+- [pfpdf](https://github.com/pfnet-research/pfpdf) by pfnet-research (MIT License) does the typesetting. It is not bundled; you install it yourself.
+- `main.js` bundles [cross-spawn](https://github.com/moxystudio/node-cross-spawn) and its dependencies (MIT and ISC licenses). Their license texts are at the top of `main.js`.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+[MIT](LICENSE)
