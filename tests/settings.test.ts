@@ -32,6 +32,19 @@ describe("parseSettings", () => {
     expect(parsed).not.toHaveProperty("unknown");
   });
 
+  it("既定のコマンドは利用者がインストールした pfpdf を使い、何もダウンロードしない", () => {
+    expect(DEFAULT_SETTINGS.command).toBe("pfpdf");
+  });
+
+  it("以前の既定値（npx で取得する）は新しい既定値に置き換え、利用者が書いた npx は残す", () => {
+    expect(parseSettings({ command: "npx --yes @pfnet-research/pfpdf@0.3.0" }).command).toBe(
+      "pfpdf"
+    );
+    expect(parseSettings({ command: "npx @pfnet-research/pfpdf@0.3.0" }).command).toBe(
+      "npx @pfnet-research/pfpdf@0.3.0"
+    );
+  });
+
   it("未知のテンプレートと空のコマンドは既定値に戻す", () => {
     const parsed = parseSettings({ template: "fancy", command: "  ", outputLocation: "desktop" });
     expect(parsed.template).toBe("default");

@@ -1,6 +1,7 @@
 import { Notice, Plugin, TFile } from "obsidian";
 import { homedir } from "node:os";
-import { buildSearchPath, loginShellPath, runCommand, splitCommand } from "./export/command";
+import { buildSearchPath, loginShellPath } from "./export/command";
+import { checkReadiness, type Readiness } from "./export/readiness";
 import { runExport } from "./export-action";
 import { PfpdfSettingTab } from "./settings";
 import { DEFAULT_SETTINGS, parseSettings, type PfpdfSettings } from "./settings-data";
@@ -59,14 +60,15 @@ export default class PfpdfExportPlugin extends Plugin {
     });
   }
 
-  /** Runs `pfpdf --version` so the settings tab can show whether the command works. */
+  /** Lets the settings tab show whether the pfpdf command starts. */
   async checkPfpdf(): Promise<string> {
-    const result = await runCommand([...splitCommand(this.settings.command), "--version"], {
-      env: { ...process.env, PATH: await this.searchPath() },
-      timeoutMs: this.settings.timeoutSeconds * 1000,
-    });
-    if (result.exitCode === 0) return `pfpdf ${result.output.trim().split("\n").pop() ?? ""}`;
-    return `pfpdf could not run: ${result.startError ?? result.output.trim().slice(-300)}`;
+    const readiness = await this.readiness(await this.searchPath());
+    return readiness.ok ? `pfpdf ${readiness.version} is ready.` : readiness.message;
+  }
+
+  private readiness(searchPath: string): Promise<Readiness> {
+    const { command, timeoutSeconds } = this.settings;
+    return checkReadiness({ command, searchPath, timeoutMs: timeoutSeconds * 1000 });
   }
 
   async exportFile(file: TFile): Promise<void> {
@@ -76,7 +78,13 @@ export default class PfpdfExportPlugin extends Plugin {
     }
     this.running = true;
     try {
-      await runExport(this.app, file, this.settings, await this.searchPath());
+      const searchPath = await this.searchPath();
+      const readiness = await this.readiness(searchPath);
+      if (!readiness.ok) {
+        new Notice(readiness.message, 0);
+        return;
+      }
+      await runExport(this.app, file, this.settings, searchPath);
     } finally {
       this.running = false;
     }

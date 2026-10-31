@@ -4,10 +4,12 @@ import { dirname, join } from "node:path";
 import { convertDocument, type NoteInput } from "../convert/document";
 import type { DocumentDefaults } from "../convert/frontmatter";
 import { runCommand, splitCommand, type RunResult } from "./command";
+import { notFoundMessage } from "./readiness";
 import type { VaultIO } from "./vault-io";
 import { WorkspaceHost } from "./workspace";
 
-export const DEFAULT_PFPDF_COMMAND = "npx --yes @pfnet-research/pfpdf@0.3.0";
+// The user installs pfpdf; the plugin never fetches it.
+export const DEFAULT_PFPDF_COMMAND = "pfpdf";
 
 export interface ExportOptions {
   command: string;
@@ -59,6 +61,7 @@ export function pfpdfWarnings(log: string): string[] {
 /** Picks the lines a user can act on from a failed run. */
 export function failureMessage(result: RunResult, command: string): string {
   if (result.startError) {
+    if (/ENOENT/.test(result.startError)) return notFoundMessage(command);
     return `Could not start "${command}" (${result.startError}). Check the pfpdf command and the Node.js path in the plugin settings.`;
   }
   if (result.timedOut) return "pfpdf timed out. Increase the timeout in the plugin settings.";

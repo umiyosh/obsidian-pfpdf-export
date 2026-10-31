@@ -3,13 +3,15 @@ import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import type { Server } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { DEFAULT_PFPDF_COMMAND, exportNote } from "../src/export/pipeline";
+import { exportNote } from "../src/export/pipeline";
 import { FsVault, prepareVault } from "./helpers/fs-vault";
 import { startImageServer } from "./helpers/image-server";
 
 // Runs the real pfpdf (and its Chromium), so it is opt-in: `make e2e`.
 const enabled = process.env.PFPDF_E2E === "1";
 const OUT = join(import.meta.dirname, ".output/e2e");
+// Developers need not install pfpdf globally; the plugin itself never runs npx.
+const COMMAND = process.env.PFPDF_COMMAND ?? "npx -y @pfnet-research/pfpdf@0.3.0";
 
 function run(command: string, args: string[]): string {
   const result = spawnSync(command, args, { encoding: "utf8" });
@@ -61,7 +63,7 @@ describe.runIf(enabled)("実際の pfpdf での PDF 出力", () => {
       },
       pdf,
       {
-        command: DEFAULT_PFPDF_COMMAND,
+        command: COMMAND,
         extraArgs: "",
         defaults: { template: "default", toc: true },
         searchPath: process.env.PATH ?? "",

@@ -10,6 +10,7 @@ import {
   pfpdfWarnings,
   type ExportOptions,
 } from "../src/export/pipeline";
+import { INSTALL_COMMAND } from "../src/export/readiness";
 import { FsVault, prepareVault } from "./helpers/fs-vault";
 import { startImageServer } from "./helpers/image-server";
 
@@ -109,14 +110,20 @@ describe("pfpdf のログ解析", () => {
     ).toEqual(["a", "b"]);
   });
 
-  it("起動失敗と時間切れは設定を見直すよう伝える", () => {
+  it("コマンドが見つからなければインストール方法を、その他の起動失敗と時間切れは設定の見直しを伝える", () => {
     expect(
       failureMessage(
-        { exitCode: null, output: "", timedOut: false, startError: "spawn npx ENOENT" },
-        "npx"
+        { exitCode: null, output: "", timedOut: false, startError: "spawn pfpdf ENOENT" },
+        "pfpdf"
+      )
+    ).toContain(INSTALL_COMMAND);
+    expect(
+      failureMessage(
+        { exitCode: null, output: "", timedOut: false, startError: "spawn pfpdf EACCES" },
+        "pfpdf"
       )
     ).toContain("Check the pfpdf command and the Node.js path");
-    expect(failureMessage({ exitCode: null, output: "", timedOut: true }, "npx")).toContain(
+    expect(failureMessage({ exitCode: null, output: "", timedOut: true }, "pfpdf")).toContain(
       "timed out"
     );
   });

@@ -1,11 +1,14 @@
 import spawn from "cross-spawn";
 
-/** Splits a command line on whitespace, honouring single and double quotes. */
+/**
+ * Splits a command line on whitespace, honouring single and double quotes. Inside double quotes
+ * only \" is an escape, so Windows paths such as "C:\Program Files\x.cmd" keep their backslashes.
+ */
 export function splitCommand(command: string): string[] {
   const args: string[] = [];
-  const re = /"((?:\\.|[^"\\])*)"|'([^']*)'|(\S+)/g;
+  const re = /"((?:\\"|[^"])*)"|'([^']*)'|(\S+)/g;
   for (const m of command.matchAll(re)) {
-    args.push(m[1] !== undefined ? m[1].replace(/\\(.)/g, "$1") : (m[2] ?? m[3] ?? ""));
+    args.push(m[1] !== undefined ? m[1].replaceAll('\\"', '"') : (m[2] ?? m[3] ?? ""));
   }
   return args;
 }
@@ -81,7 +84,7 @@ const MAX_OUTPUT = 200_000;
 
 export function runCommand(argv: readonly string[], options: RunOptions): Promise<RunResult> {
   const [command = "", ...args] = argv;
-  // cross-spawn starts Windows .cmd shims such as npx with every argument escaped for cmd.exe.
+  // cross-spawn starts Windows .cmd shims such as the npm-installed pfpdf with every argument escaped for cmd.exe.
   // A plain `shell: true` would let a note or folder name like "a&b" run as a second command.
   return new Promise((resolve) => {
     let output = "";

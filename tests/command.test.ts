@@ -22,6 +22,17 @@ describe("splitCommand", () => {
     expect(splitCommand(`"a \\"b\\""`)).toEqual(['a "b"']);
     expect(splitCommand("   ")).toEqual([]);
   });
+
+  it("引用符の中の Windows のパスのバックスラッシュを残す", () => {
+    expect(splitCommand(String.raw`"C:\Program Files\nodejs\pfpdf.cmd" --host-fonts`)).toEqual([
+      String.raw`C:\Program Files\nodejs\pfpdf.cmd`,
+      "--host-fonts",
+    ]);
+    expect(splitCommand(String.raw`"\\server\tools\pfpdf.cmd"`)).toEqual([
+      String.raw`\\server\tools\pfpdf.cmd`,
+    ]);
+    expect(splitCommand(String.raw`C:\tools\pfpdf.cmd`)).toEqual([String.raw`C:\tools\pfpdf.cmd`]);
+  });
 });
 
 describe("buildSearchPath", () => {
@@ -63,7 +74,8 @@ describe("ログインシェルの PATH", () => {
     expect(parseLoginShellOutput("no markers")).toBeNull();
   });
 
-  it("実際のシェルから PATH を読む", async () => {
+  // The plugin reads the login shell only on macOS and Linux (see searchPath in main.ts).
+  it.skipIf(process.platform === "win32")("実際のシェルから PATH を読む", async () => {
     const path = await loginShellPath("/bin/sh");
     expect(path).toContain("/");
   });

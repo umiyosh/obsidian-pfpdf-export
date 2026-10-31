@@ -35,7 +35,9 @@ function prepare() {
   mkdirSync(pluginDir, { recursive: true });
   cpSync(join(repo, "main.js"), join(pluginDir, "main.js"));
   cpSync(join(repo, "manifest.json"), join(pluginDir, "manifest.json"));
-  const settings = { outputLocation: "note-folder", openAfterExport: false };
+  // Developers need not install pfpdf globally; the plugin itself never runs npx.
+  const command = process.env.PFPDF_COMMAND ?? "npx -y @pfnet-research/pfpdf@0.3.0";
+  const settings = { command, outputLocation: "note-folder", openAfterExport: false };
   writeFileSync(join(pluginDir, "data.json"), JSON.stringify(settings));
   writeFileSync(join(vault, ".obsidian/community-plugins.json"), '["pfpdf-export"]');
 

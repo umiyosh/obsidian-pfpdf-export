@@ -4,6 +4,12 @@ import { dirname, join } from "node:path";
 
 const args = process.argv.slice(2);
 const value = (flag) => args[args.indexOf(flag) + 1];
+
+if (args.includes("--version")) {
+  process.stdout.write("0.3.0\n");
+  process.exit(0);
+}
+
 const input = value("--input");
 const output = value("--output");
 const markdown = readFileSync(input, "utf8");

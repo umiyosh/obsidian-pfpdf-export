@@ -1,5 +1,6 @@
 import { Notice, PluginSettingTab, type App, type SettingDefinitionItem } from "obsidian";
 import { TEMPLATES } from "./convert/frontmatter";
+import { INSTALL_COMMAND } from "./export/readiness";
 import type PfpdfExportPlugin from "./main";
 import { DEFAULT_SETTINGS, parseSettings, type OutputLocation } from "./settings-data";
 
@@ -82,7 +83,7 @@ export class PfpdfSettingTab extends PluginSettingTab {
       items: [
         {
           name: "Pfpdf command",
-          desc: "Command that runs pfpdf. Requires Node.js 22.12 or later.",
+          desc: `Command that runs pfpdf. Install pfpdf with "${INSTALL_COMMAND}" (Node.js 22.12 or later).`,
           control: {
             type: "text",
             key: "command",
@@ -92,7 +93,7 @@ export class PfpdfSettingTab extends PluginSettingTab {
         },
         {
           name: "Check pfpdf",
-          desc: "Runs the command above with --version.",
+          desc: "Runs the command above with --version to see whether pfpdf starts.",
           action: () => void this.check(),
         },
         {
@@ -102,12 +103,12 @@ export class PfpdfSettingTab extends PluginSettingTab {
         },
         {
           name: "Additional search path",
-          desc: "Folders to search for Node.js and npx, in PATH syntax, if they are not found.",
+          desc: "Folders to search for Node.js and pfpdf, in PATH syntax, if they are not found.",
           control: { type: "text", key: "extraPath" },
         },
         {
           name: "Timeout in seconds",
-          desc: "The first export downloads pfpdf and its browser, which can take several minutes.",
+          desc: "Time limit for one export.",
           control: { type: "number", key: "timeoutSeconds", min: 10, max: 3600, step: 1 },
         },
         {
