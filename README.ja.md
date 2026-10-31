@@ -10,29 +10,17 @@ pfpdf を別のプログラムとして起動するため、デスクトップ�
 
 - Obsidian 1.13.0 以降（デスクトップ版）
 - [Node.js](https://nodejs.org/) 22.12 以降
-- 自分でインストールした pfpdf 0.3.0（下記）。プラグインは pfpdf もブラウザも、ほかの何もダウンロード・インストールしない
+- 自分でインストールした pfpdf 0.3.0（下記）。プラグインは pfpdf をダウンロード・インストールしない
 
 ### pfpdf のインストール
 
-1. npm で pfpdf をインストールする
+npm で pfpdf をインストールする。
 
-   ```sh
-   npm install -g @pfnet-research/pfpdf@0.3.0
-   ```
+```sh
+npm install -g @pfnet-research/pfpdf@0.3.0
+```
 
-2. ターミナルで Markdown ファイルを 1 回変換する。pfpdf は最初の変換で、PDF の描画に使う Chromium（数百 MB）をダウンロードし、以後はキャッシュを使う。これが済むまで、プラグインは書き出しをしない
-
-   ```sh
-   pfpdf --input hello.md --output hello.pdf
-   ```
-
-   `hello.md` は何でもよい（例: `# Hello` とだけ書いたファイル）。
-
-3. 準備ができたか確かめる。`browser` の項目が `pass` になっていればよい
-
-   ```sh
-   pfpdf --doctor
-   ```
+pfpdf は最初の変換で、PDF の描画に使う Chromium（数百 MB）をダウンロードし、以後はキャッシュを使う。そのため、最初の書き出しは 2 回目以降より時間がかかる。
 
 Linux では Chromium 用のシステムライブラリも要る。足りないものは `pfpdf --doctor` が示す。[pfpdf のトラブルシューティング](https://github.com/pfnet-research/pfpdf/blob/main/docs/tutorial.en/08_troubleshooting.md)も参照。
 
@@ -47,7 +35,7 @@ Linux では Chromium 用のシステムライブラリも要る。足りない�
 - コマンドパレットで **Export current note to PDF** を実行する
 - またはファイルエクスプローラーでノートを右クリックし **Export to PDF with pfpdf** を選ぶ
 
-Obsidian を起動してから最初の書き出しの前に、`pfpdf --doctor` で pfpdf とブラウザの準備ができているかを確かめる。できていなければ、書き出さずに何をすればよいかを通知する。設定画面の **Check pfpdf** も同じ確認をする。
+書き出しのたびに、その前に `pfpdf --version` を実行して pfpdf が起動するかを確かめる。起動しなければ書き出さずに、その理由を通知する。pfpdf が見つからないときは、インストールの方法も示す。設定画面の **Check pfpdf** も同じ確認をする。
 
 テンプレートや目次は、ノートの front matter で指定できる。
 
@@ -112,7 +100,7 @@ Dock やスタートメニューから起動した Obsidian は PATH が最小�
 
 - 書き出すノートの中のリモート画像（`http` / `https` の URL）を、PDF に埋め込むために Obsidian の `requestUrl` でダウンロードする。1 件あたり 30 秒で打ち切る。ほかのデータは送らない
 - ダウンロードに失敗した画像は URL のまま pfpdf に渡すので、pfpdf のブラウザがその URL を読みに行くことがある。ノート内の raw HTML が参照するリモートのリソースも、pfpdf のブラウザが読み込むことがある
-- プラグイン自身は pfpdf、Chromium、そのほかのコードをダウンロードしない。pfpdf が Chromium をダウンロードするのは、[pfpdf のインストール](#pfpdf-のインストール)の手順で利用者が最初の変換を実行したときだけ
+- プラグイン自身は pfpdf やそのほかのコードをダウンロードしない。利用者がインストールした pfpdf が、最初の変換で Chromium をダウンロードする（[pfpdf のインストール](#pfpdf-のインストール)）
 
 **Vault 外のファイル**
 
@@ -122,7 +110,7 @@ Dock やスタートメニューから起動した Obsidian は PATH が最小�
 
 **外部プログラムの起動**
 
-- pfpdf（**Pfpdf command** の設定）を別プロセスとして起動する。確認には `--doctor`、書き出しには `--input` と `--output` を付ける
+- pfpdf（**Pfpdf command** の設定）を別プロセスとして起動する。確認には `--version`、書き出しには `--input` と `--output` を付ける
 - macOS と Linux では、PATH を読むためにログインシェル（`$SHELL -ilc`）を Obsidian の起動中に 1 回だけ実行する。このときシェルの起動ファイルが読み込まれる
 
 **その他**

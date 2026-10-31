@@ -10,29 +10,17 @@ The plugin works on desktop only (Windows, macOS and Linux), because it runs pfp
 
 - Obsidian 1.13.0 or later (desktop)
 - [Node.js](https://nodejs.org/) 22.12 or later
-- pfpdf 0.3.0, installed by you (see below). The plugin never downloads or installs pfpdf, its browser or anything else.
+- pfpdf 0.3.0, installed by you (see below). The plugin does not download or install pfpdf.
 
 ### Install pfpdf
 
-1. Install pfpdf with npm:
+Install pfpdf with npm:
 
-   ```sh
-   npm install -g @pfnet-research/pfpdf@0.3.0
-   ```
+```sh
+npm install -g @pfnet-research/pfpdf@0.3.0
+```
 
-2. Convert any Markdown file once in a terminal. On its first conversion, pfpdf downloads Chromium, the browser it renders PDFs with (several hundred megabytes), and caches it for later runs. The plugin does not export until this is done.
-
-   ```sh
-   pfpdf --input hello.md --output hello.pdf
-   ```
-
-   `hello.md` can be any Markdown file, for example one containing just `# Hello`.
-
-3. Check that pfpdf is ready. The `browser` check should report `pass`.
-
-   ```sh
-   pfpdf --doctor
-   ```
+On its first conversion, pfpdf downloads Chromium, the browser it renders PDFs with (several hundred megabytes), and caches it for later runs. Your first export therefore takes longer than later ones.
 
 On Linux, Chromium also needs some system libraries; `pfpdf --doctor` reports what is missing. See [pfpdf's troubleshooting guide](https://github.com/pfnet-research/pfpdf/blob/main/docs/tutorial.en/08_troubleshooting.md).
 
@@ -47,7 +35,7 @@ To install manually, download `main.js` and `manifest.json` from the [latest rel
 - Run **Export current note to PDF** from the command palette, or
 - right-click a note in the file explorer and select **Export to PDF with pfpdf**.
 
-Before the first export in a session, the plugin runs `pfpdf --doctor` to confirm that pfpdf and its browser are ready. If they are not, it tells you what to do instead of exporting. **Check pfpdf** in the plugin settings runs the same check.
+Before each export, the plugin runs `pfpdf --version` to check that pfpdf starts. If it does not, the plugin shows why, and how to install pfpdf if it was not found, instead of exporting. **Check pfpdf** in the plugin settings runs the same check.
 
 Set the template and table of contents in the note's front matter:
 
@@ -112,7 +100,7 @@ You can set **Pfpdf command** to another command, such as `npx @pfnet-research/p
 
 - The plugin downloads remote images (`http` and `https` URLs) in the note you export, using Obsidian's `requestUrl`, so they can be embedded in the PDF. Each download times out after 30 seconds. No other data is sent.
 - If such a download fails, the URL is passed to pfpdf, and pfpdf's browser may try to load it. Remote resources in raw HTML in the note can also be loaded by pfpdf's browser.
-- The plugin itself never downloads pfpdf, Chromium or other code. pfpdf downloads Chromium only when you run its first conversion yourself, as described in [Install pfpdf](#install-pfpdf).
+- The plugin itself never downloads pfpdf or other code. On its first conversion, the pfpdf you installed downloads Chromium, as described in [Install pfpdf](#install-pfpdf).
 
 **Files outside the vault**
 
@@ -122,7 +110,7 @@ You can set **Pfpdf command** to another command, such as `npx @pfnet-research/p
 
 **External programs**
 
-- The plugin runs pfpdf (the **Pfpdf command** setting) as a separate process, with `--doctor` to check it and with `--input` and `--output` to export.
+- The plugin runs pfpdf (the **Pfpdf command** setting) as a separate process, with `--version` to check it and with `--input` and `--output` to export.
 - On macOS and Linux, it runs your login shell (`$SHELL -ilc`) once per session to read your PATH. This loads your shell's startup files.
 
 **Other**
