@@ -8,7 +8,7 @@ import { notFoundMessage } from "./readiness";
 import type { VaultIO } from "./vault-io";
 import { WorkspaceHost } from "./workspace";
 
-// The user installs pfpdf; the plugin never fetches it (see readiness.ts).
+// The user installs pfpdf; the plugin never fetches it.
 export const DEFAULT_PFPDF_COMMAND = "pfpdf";
 
 export interface ExportOptions {

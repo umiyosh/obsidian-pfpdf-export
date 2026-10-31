@@ -5,29 +5,9 @@ import { dirname, join } from "node:path";
 const args = process.argv.slice(2);
 const value = (flag) => args[args.indexOf(flag) + 1];
 
-// --doctor reports the browser as --fake-browser says: pass, missing, fail or garbage.
-if (args.includes("--doctor")) {
-  const browser = {
-    pass: { status: "pass", message: "browser launched successfully: /cache/chrome" },
-    missing: {
-      status: "warning",
-      message: "managed browser is not installed yet; conversion will attempt to download it",
-    },
-    fail: { status: "fail", message: "browser exited before startup" },
-  }[value("--fake-browser") ?? "pass"];
-  if (!browser) {
-    process.stdout.write("unknown option --doctor\n");
-    process.exit(2);
-  }
-  const checks = [
-    { id: "node-version", status: "pass", message: "Node.js 22.12.0" },
-    { id: "browser", ...browser },
-  ];
-  const status = browser.status;
-  process.stdout.write(
-    `${JSON.stringify({ schemaVersion: 2, command: "doctor", status, checks })}\n`
-  );
-  process.exit(status === "fail" ? 1 : 0);
+if (args.includes("--version")) {
+  process.stdout.write("0.3.0\n");
+  process.exit(0);
 }
 
 const input = value("--input");

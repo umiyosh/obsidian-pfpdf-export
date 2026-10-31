@@ -93,7 +93,7 @@ export class PfpdfSettingTab extends PluginSettingTab {
         },
         {
           name: "Check pfpdf",
-          desc: "Runs the command above with --version and --doctor to see whether exports can run.",
+          desc: "Runs the command above with --version to see whether pfpdf starts.",
           action: () => void this.check(),
         },
         {
