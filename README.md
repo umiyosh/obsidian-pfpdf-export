@@ -2,6 +2,13 @@
 
 [日本語](README.ja.md)
 
+[![CI](https://github.com/umiyosh/obsidian-pfpdf-export/actions/workflows/ci.yml/badge.svg)](https://github.com/umiyosh/obsidian-pfpdf-export/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/umiyosh/obsidian-pfpdf-export)](https://github.com/umiyosh/obsidian-pfpdf-export/releases/latest)
+[![Obsidian plugin](https://img.shields.io/badge/Obsidian-plugin-7C3AED?logo=obsidian&logoColor=white)](https://community.obsidian.md/plugins/pfpdf-export)
+[![License: MIT](https://img.shields.io/github/license/umiyosh/obsidian-pfpdf-export)](LICENSE)
+
+![A note open in Obsidian, and the cover, contents and body pages that pfpdf Export typeset from it](https://raw.githubusercontent.com/umiyosh/obsidian-pfpdf-export/master/docs/images/hero.webp)
+
 This plugin exports Obsidian notes to PDF. [pfpdf](https://github.com/pfnet-research/pfpdf) lays out the pages, and can add a cover page and a table of contents. Images embedded in the note go into the PDF, including images with a set size, images written as HTML `<img>` tags, and images on the internet.
 
 The plugin starts pfpdf as a separate program, so it works only in the desktop app (Windows, macOS and Linux).
