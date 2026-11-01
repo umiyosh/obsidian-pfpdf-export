@@ -7,7 +7,7 @@
 [![Obsidian plugin](https://img.shields.io/badge/Obsidian-plugin-7C3AED?logo=obsidian&logoColor=white)](https://community.obsidian.md/plugins/pfpdf-export)
 [![License: MIT](https://img.shields.io/github/license/umiyosh/obsidian-pfpdf-export)](LICENSE)
 
-![Obsidian で開いたノートと、pfpdf Export がそのノートから組版した PDF の表紙、目次、本文のページ](https://raw.githubusercontent.com/umiyosh/obsidian-pfpdf-export/master/docs/images/hero.webp)
+![Obsidian で開いたノートと、pfpdf Export がそのノートから組版した PDF の表紙、目次、本文のページ](https://raw.githubusercontent.com/umiyosh/obsidian-pfpdf-export/master/docs/images/hero.ja.webp)
 
 Obsidian のノートを PDF に書き出すプラグインです。PDF の組版（文字や図の配置）は [pfpdf](https://github.com/pfnet-research/pfpdf) が行い、表紙と目次を付けられます。ノートに埋め込んだ画像は、サイズを指定したもの、HTML の `<img>` で書いたもの、インターネット上の画像も含めて PDF に入ります。
 
