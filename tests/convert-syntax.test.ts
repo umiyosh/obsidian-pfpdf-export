@@ -29,6 +29,37 @@ describe("リンク", () => {
     const { out } = await convert("[m](mailto:a@example.com) [o](obsidian://open?vault=x)");
     expect(out).toBe("[m](mailto:a@example.com) [o](obsidian://open?vault=x)");
   });
+
+  it("CommonMark と同じく、リンクの文字列は直前の [ から始まる", async () => {
+    const { out } = await convert("[a [b](other.md) と [c](<other.md>)");
+    expect(out).toBe("[a b と c");
+  });
+
+  it("バックスラッシュでエスケープした [ からはリンクを始めない", async () => {
+    const { out } = await convert(String.raw`\[a](other.md) と \\[b](other.md)`);
+    expect(out).toBe(String.raw`\[a](other.md) と \\b`);
+  });
+});
+
+// Each crafted line used to take time quadratic in its length (several seconds at this size).
+describe("細工した長い行でも書き出しが固まらない", () => {
+  const n = 100_000;
+  const lines: Record<string, string> = {
+    "[ の連続": "[".repeat(n),
+    "エスケープした [ の連続": "\\[".repeat(n / 2),
+    "![ の連続": "![".repeat(n / 2),
+    "閉じない <> のリンク先": "[](<".repeat(n / 4),
+    閉じないハイライト: "==a ".repeat(n / 4),
+    長い空白のあとの文字: " ".repeat(n) + "x",
+  };
+
+  for (const [name, line] of Object.entries(lines)) {
+    it(name, async () => {
+      const start = performance.now();
+      await convert(line);
+      expect(performance.now() - start).toBeLessThan(1000);
+    });
+  }
 });
 
 describe("コードと数式は変換しない", () => {

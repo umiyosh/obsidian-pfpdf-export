@@ -7,14 +7,20 @@ const PROTECTED =
   /(?<!`)(`+)(?!`)[\s\S]*?[^`]\1(?!`)|(?<![\\$])\$(?![\s$])(?:\\.|[^$\\\n])+?(?<!\s)\$(?!\$)/g;
 const SLOT = /(\d+)/g;
 
-const DEST = String.raw`(<[^>\n]*>|[^\s()]+(?:\([^\s()]*\)[^\s()]*)*)(?:\s+(?:"[^"]*"|'[^']*'))?`;
+// Notes may come from other people, so every pattern below must fail at the next opener instead of
+// rescanning to the end of the line; otherwise a crafted line takes time quadratic in its length
+// and freezes Obsidian. Labels and <...> destinations therefore stop at an unescaped "[" or "<",
+// as CommonMark requires, and a link cannot start at a backslash-escaped "[".
+const DEST = String.raw`(<[^<>\n]*>|[^\s()]+(?:\([^\s()]*\)[^\s()]*)*)(?:\s+(?:"[^"]*"|'[^']*'))?`;
+const LABEL = String.raw`((?:\\.|[^[\]\\\n])*)`;
+const NOT_ESCAPED = String.raw`(?<!(?<!\\)\\(?:\\\\)*)`;
 const WIKI = /(!?)\[\[([^[\]\n]+?)\]\]/g;
-const MD_IMAGE = new RegExp(String.raw`!\[((?:\\.|[^\]\\\n])*)\]\(\s*${DEST}\s*\)`, "g");
-const MD_LINK = new RegExp(String.raw`(?<!!)\[((?:\\.|[^\]\\\n])*)\]\(\s*${DEST}\s*\)`, "g");
+const MD_IMAGE = new RegExp(String.raw`!\[${LABEL}\]\(\s*${DEST}\s*\)`, "g");
+const MD_LINK = new RegExp(String.raw`(?<!!)${NOT_ESCAPED}\[${LABEL}\]\(\s*${DEST}\s*\)`, "g");
 const RAW_IMG = /<img\b[^>]*>/gi;
-const HIGHLIGHT = /==(?![\s=])(.+?)(?<![\s=])==/g;
+const HIGHLIGHT = /==(?![\s=])((?:[^=\n]|=(?!=))+?)(?<![\s=])==/g;
 const INLINE_FOOTNOTE = /\^\[([^[\]\n]+)\]/g;
-const BLOCK_ID = /(?:^|\s+)\^[A-Za-z0-9-]+\s*$/;
+const BLOCK_ID = /(?:^|(?<!\s)\s+)\^[A-Za-z0-9-]+\s*$/;
 
 export interface CommentState {
   inComment: boolean;
