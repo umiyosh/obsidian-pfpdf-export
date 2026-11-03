@@ -1,6 +1,6 @@
 {
   "name": "obsidian-pfpdf-export",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Obsidian plugin that exports notes to PDF with pfpdf",
   "license": "MIT",
